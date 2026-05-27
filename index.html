@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Neon Warzone</title>
+<style>
+body{margin:0;overflow:hidden;font-family:Arial;background:#000;color:#fff;}
+canvas{display:block;background:#87c7ff;}
+
+#menu,#gameOver{
+position:absolute;inset:0;
+display:flex;flex-direction:column;
+justify-content:center;align-items:center;
+background:rgba(0,0,0,0.9);
+z-index:5;
+}
+
+#message{
+position:absolute;top:20%;left:50%;transform:translateX(-50%);
+background:rgba(0,0,0,0.7);
+padding:10px 20px;
+border:1px solid #fff;
+display:none;
+z-index:10;
+}
+
+button{margin:8px;padding:10px;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<div id="menu">
+<h1>NEON WARZONE</h1>
+<button onclick="setClass('police')">Police (Pistol 25 dmg)</button>
+<button onclick="setClass('army')">Army (Rifle 50 dmg)</button>
+<button onclick="start()">Enter Battlefield</button>
+</div>
+
+<div id="gameOver" style="display:none;">
+<h1>COOKED</h1>
+<button onclick="restart()">Play Again</button>
+<button onclick="back()">Main Menu</button>
+</div>
+
+<div id="message"></div>
+
+<canvas id="c"></canvas>
+
+<script>
+const c=document.getElementById('c');
+const x=c.getContext('2d');
+c.width=innerWidth;
+c.height=innerHeight;
+
+let running=false;
+let over=false;
+let cls='police';
+
+const gun={police:25,army:50};
+
+let p,bul=[],en=[],t=[],k=0;
+let m={x:0,y:0},keys={};
+let m1=false,m2=false,m3=false;
+
+function msg(t){
+const d=document.getElementById('message');
+d.innerText=t;d.style.display='block';
+setTimeout(()=>d.style.display='none',2000);
+}
+
+function init(){
+p={hp:100,x:0};bul=[];en=[];t=[];k=0;
+for(let i=0;i<6;i++)t.push({x:(Math.random()*10-5),z:Math.random()*5+2});
+m1=m2=m3=false;over=false;
+}
+init();
+
+function setClass(c){cls=c;}
+function start(){document.getElementById('menu').style.display='none';running=true;init();}
+function restart(){document.getElementById('gameOver').style.display='none';running=true;init();}
+function back(){document.getElementById('gameOver').style.display='none';document.getElementById('menu').style.display='flex';running=false;}
+
+</html>
