@@ -1,84 +1,88 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Neon Warzone</title>
-<style>
-body{margin:0;overflow:hidden;font-family:Arial;background:#000;color:#fff;}
-canvas{display:block;background:#87c7ff;}
-
-#menu,#gameOver{
-position:absolute;inset:0;
-display:flex;flex-direction:column;
-justify-content:center;align-items:center;
-background:rgba(0,0,0,0.9);
-z-index:5;
 }
 
-#message{
-position:absolute;top:20%;left:50%;transform:translateX(-50%);
-background:rgba(0,0,0,0.7);
-padding:10px 20px;
-border:1px solid #fff;
-display:none;
-z-index:10;
+for(let i=enemies.length-1;i>=0;i--){
+let e=enemies[i];
+e.z-=e.s;
+
+if(e.z<=0.05){player.hp-=10;enemies.splice(i,1);continue;}
+
+for(let j=bullets.length-1;j>=0;j--){
+let b=bullets[j];
+if(Math.abs(e.z-b.z)<0.2&&Math.abs(e.x-b.x)<0.6){
+e.hp-=b.d;
+bullets.splice(j,1);
+if(e.hp<=0){enemies.splice(i,1);kills++;}
+break;
+}
+}
+}
 }
 
-button{margin:8px;padding:10px;cursor:pointer;}
-</style>
-</head>
-<body>
-
-<div id="menu">
-<h1>NEON WARZONE</h1>
-<button onclick="setClass('police')">Police (Pistol 25 dmg)</button>
-<button onclick="setClass('army')">Army (Rifle 50 dmg)</button>
-<button onclick="start()">Enter Battlefield</button>
-</div>
-
-<div id="gameOver" style="display:none;">
-<h1>COOKED</h1>
-<button onclick="restart()">Play Again</button>
-<button onclick="back()">Main Menu</button>
-</div>
-
-<div id="message"></div>
-
-<canvas id="c"></canvas>
-
-<script>
-const c=document.getElementById('c');
-const x=c.getContext('2d');
-c.width=innerWidth;
-c.height=innerHeight;
-
-let running=false;
-let over=false;
-let cls='police';
-
-const gun={police:25,army:50};
-
-let p,bul=[],en=[],t=[],k=0;
-let m={x:0,y:0},keys={};
-let m1=false,m2=false,m3=false;
-
-function msg(t){
-const d=document.getElementById('message');
-d.innerText=t;d.style.display='block';
-setTimeout(()=>d.style.display='none',2000);
+function project(x,z){
+let s=1/(z+0.1);
+return{x:canvas.width/2+x*220*s,y:canvas.height/2,size:80*s};
 }
 
-function init(){
-p={hp:100,x:0};bul=[];en=[];t=[];k=0;
-for(let i=0;i<6;i++)t.push({x:(Math.random()*10-5),z:Math.random()*5+2});
-m1=m2=m3=false;over=false;
+function drawBG(){
+ctx.fillStyle='#87c7ff';
+ctx.fillRect(0,0,canvas.width,canvas.height);
+
+ctx.fillStyle='rgba(255,255,255,0.6)';
+for(let i=0;i<6;i++){
+let x=(i*250+(Date.now()*0.02)%canvas.width)%canvas.width;
+let y=80+i*25;
+ctx.beginPath();ctx.arc(x,y,40,0,Math.PI*2);ctx.fill();
 }
-init();
 
-function setClass(c){cls=c;}
-function start(){document.getElementById('menu').style.display='none';running=true;init();}
-function restart(){document.getElementById('gameOver').style.display='none';running=true;init();}
-function back(){document.getElementById('gameOver').style.display='none';document.getElementById('menu').style.display='flex';running=false;}
+ctx.fillStyle='#c2a26b';
+ctx.fillRect(0,canvas.height/2,canvas.width,canvas.height/2);
 
+for(let p of props){
+p.z-=0.002;
+if(p.z<0.5)p.z=5;
+let s=1/p.z;
+let x=canvas.width/2+p.x*200*s;
+let y=canvas.height/2+120*s;
+ctx.fillStyle='#2e7d32';
+ctx.fillRect(x,y,60*s,30*s);
+}
+}
+
+function drawEnemy(x,y,s){
+ctx.fillStyle='#111';
+ctx.fillRect(x,y-s/2,s*0.6,s);
+ctx.fillStyle='#2b2b2b';
+ctx.fillRect(x+s*0.1,y-s/2+s*0.15,s*0.4,s*0.3);
+ctx.fillStyle='#00e5ff';
+ctx.fillRect(x+s*0.2,y,s*0.2,s*0.05);
+}
+
+function draw(){
+drawBG();
+
+for(let e of enemies){
+let p=project(e.x,e.z);
+drawEnemy(p.x,p.y,p.size);
+}
+
+ctx.fillStyle='white';
+for(let b of bullets){
+let p=project(b.x,b.z);
+ctx.fillRect(p.x,p.y,4,4);
+}
+
+ctx.fillStyle='black';
+ctx.fillText('HP: '+player.hp,20,30);
+ctx.fillText('CLASS: '+classType.toUpperCase(),20,55);
+ctx.fillText('KILLS: '+kills,20,80);
+}
+
+function loop(){
+if(running&&!gameOver){update();draw();}
+requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
 </html>
